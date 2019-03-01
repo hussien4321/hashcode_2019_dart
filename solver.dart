@@ -3,6 +3,8 @@ import 'slide.dart';
 
 class Solver{
 
+  int controlThreshold = 0;
+
   List<Slide> sortedSlides;
   List<Slide> currentSlides;
 
@@ -14,11 +16,13 @@ class Solver{
 
   List<Slide> solve() {
     
+
+    currentSlides.sort((slideA, slideB) => slideA.tags.length.compareTo(slideB.tags.length));
+    // currentSlides.sort((slideA, slideB) => _calculateInterestScore(slideA, slideB));
     _initialiseSlideshow();
 
     while(currentSlides.isNotEmpty){
 
-      print('${currentSlides.length} : ${sortedSlides.length}');
       _appendBestMatchingSlideToTheEndOfSlideshow();
 
       if(currentSlides.isNotEmpty){
@@ -31,7 +35,7 @@ class Solver{
   }
 
   _initialiseSlideshow(){
-    Slide initialSlide = currentSlides.removeAt(0);//TOOD: Could be randomised for potentially better score
+    Slide initialSlide = currentSlides.removeLast();//TOOD: Could be randomised for potentially better score
 
     sortedSlides.add(initialSlide);
   }
@@ -42,16 +46,22 @@ class Solver{
     int bestScore = -1;
     int bestIndex = -1;
 
+
     for(int i = 0; i < _newIndexToPreventOverFlow; i++){
+
       int currentScore = _calculateInterestScore(currentSlides[i], slideAtEnd);
     
       if(currentScore > bestScore){
         bestScore = currentScore;
         bestIndex = i;
       }
+      
+      if(currentScore >= 3){
+        break;
+      }
     }
 
-    print('BEST SCORE IS $bestScore @$bestIndex - ${currentSlides.length} : ${sortedSlides.length}');
+    print('Best slide score $bestScore @$bestIndex - ${currentSlides.length} : ${sortedSlides.length}');
 
     sortedSlides.add(currentSlides.removeAt(bestIndex));
 
@@ -62,22 +72,36 @@ class Solver{
     int bestScore = -1;
     int bestIndex = -1;
 
+    
     for(int i = 0; i < _newIndexToPreventOverFlow; i++){
+      
       int currentScore = _calculateInterestScore(currentSlides[i], slideAtStart);
     
       if(currentScore > bestScore){
         bestScore = currentScore;
         bestIndex = i;
       }
+
+      if(currentScore >= 3){
+        break;
+      }
+
     }
 
-    print('BEST SCORE IS $bestScore @$bestIndex - ${currentSlides.length} : ${sortedSlides.length}');
+    print('Best slide score $bestScore @$bestIndex - ${currentSlides.length} : ${sortedSlides.length}');
 
     sortedSlides.insert(0, currentSlides.removeAt(bestIndex));
 
   }
 
-  int get _newIndexToPreventOverFlow =>  min(1000, currentSlides.length);
+  // Slide getBestMatchingSlide(Slide matchingSlide){
+  //   currentSlides.firstWhere((slide) {
+  //     int maxScore = (matchingSlide.tags.length/2).floor();
+  //     return _calculateInterestScore(slide, matchingSlide) == maxScore;
+  //   }, orElse: () => currentSlides.first);
+  // }
+
+  int get _newIndexToPreventOverFlow => min(currentSlides.length, currentSlides.length);
 
   int _calculateInterestScore(Slide slideA, Slide slideB) {
     
@@ -100,7 +124,7 @@ class Solver{
     for(int i=0; i<numberOfAttempts; i++){
 
       sortedSlides.shuffle();
-      int currentScore = _calculateInterestScoreOfSlideShow();
+      int currentScore = calculateInterestScoreOfSlideShow(sortedSlides);
       if(currentScore > bestScore){
         bestScore = currentScore;
         print('CURRENT BEST SCORE: $bestScore @$i');
@@ -112,10 +136,10 @@ class Solver{
 
   }
 
-  int _calculateInterestScoreOfSlideShow(){
+  int calculateInterestScoreOfSlideShow(List<Slide> slidesToBeMeasured){
     int totalInterestScore = 0;
-    for(int i=0; i<sortedSlides.length-1;i++){
-      totalInterestScore += _calculateInterestScore(sortedSlides[i], sortedSlides[i+1]);
+    for(int i=0; i<slidesToBeMeasured.length-1;i++){
+      totalInterestScore += _calculateInterestScore(slidesToBeMeasured[i], slidesToBeMeasured[i+1]);
     }
     return totalInterestScore;
   }

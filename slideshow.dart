@@ -3,6 +3,7 @@ import 'slide.dart';
 import 'dart:math';
 
 class Slideshow{
+  int controlThreshold = 20;
 
   List<Photo> allPhotos;
   List<Slide> allSlides;
@@ -23,6 +24,11 @@ class Slideshow{
 
     _addAllHorizontalPhotosIntoSlides();
 
+    if(allPhotos.isNotEmpty){
+      this.allPhotos.sort((photoA, photoB) => -photoA.tags.length.compareTo(photoB.tags.length));
+      print(allPhotos.first);
+      print(allPhotos.last);
+    }
     _addAllVerticalPhotosIntoSlides();
 
     return allSlides;
@@ -38,10 +44,10 @@ class Slideshow{
 
   _addAllVerticalPhotosIntoSlides() {
     while(allPhotos.isNotEmpty){
-      Photo anyVerticalPhoto = allPhotos.removeAt(0);
-      Photo bestPairingVerticalPhoto = _findBestPairingPhoto(anyVerticalPhoto);
+      Photo longestVerticalPhoto = allPhotos.removeLast();
+      Photo bestPairingVerticalPhoto = _findBestPairingPhoto(longestVerticalPhoto);
 
-      allSlides.add(Slide(anyVerticalPhoto, bestPairingVerticalPhoto));
+      allSlides.add(Slide(longestVerticalPhoto, bestPairingVerticalPhoto));
     }
   }
 
@@ -51,20 +57,22 @@ class Slideshow{
     int currentPhotoTags =currentPhoto.tags.length;
     
     for(int i=0; i<_newSearchSizeToPreventOverflow; i++){
-      int additionalUniqueTags = allPhotos[i].tags.where((tag) => !currentPhoto.tags.contains(tag)).length;
-      
-      int totalUniqueTags =currentPhotoTags + additionalUniqueTags;
-
-      if(totalUniqueTags > bestScore){
-        bestScore = totalUniqueTags;
+      if(allPhotos[i].tags.where((tag) => currentPhoto.tags.contains(tag)).length == 0){
         bestIndex = i;
+        bestScore =currentPhotoTags + allPhotos[i].tags.length;
+        break;
       }
+    }
+
+    if(bestIndex == -1){
+      bestIndex = 0;
+      bestScore = currentPhotoTags + allPhotos[0].tags.length;
     }
     print('Best score $bestScore @$bestIndex ${allPhotos.length} : ${allSlides.length}');
 
     return allPhotos.removeAt(bestIndex);
   }
 
-  int get _newSearchSizeToPreventOverflow => min(allPhotos.length, 100);
+  int get _newSearchSizeToPreventOverflow => min(10000, allPhotos.length);
 
 }

@@ -9,9 +9,9 @@ main() async {
   List<String> filenames = [
     // "a_example",
     // "b_lovely_landscapes",
-    "c_memorable_moments",
+    // "c_memorable_moments",
     // "d_pet_pictures", 
-    // "e_shiny_selfies",
+    "e_shiny_selfies",
   ];
 
   for(String filename in filenames){
@@ -26,9 +26,11 @@ main() async {
     Solver slideshowSolver = Solver(unorderedSlides);
 
     print('ordering slides...');
-    List<Slide> orderedSlides = slideshowSolver.solveRandomly();
+    List<Slide> orderedSlides = slideshowSolver.solve();
 
-    print('writing to file...');
+    print('SCORE IS ${slideshowSolver.calculateInterestScoreOfSlideShow(orderedSlides)}');
+
+    print('writing to file...$filename');
     IOOperations.writeResultToFile("./outputs/$filename.txt", orderedSlides);
   }
 }
